@@ -1,0 +1,134 @@
+{
+    "$schema": "http://schemas.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the webapp"
+            }
+        },
+        "hostingPlanName": {
+            "type": "string"
+        },
+        "packageUri": {
+            "type": "string"
+        },
+        "costCenter": {
+            "type": "string"
+        },
+        "appTitle": {
+            "type": "string"
+        },
+        "readOnly": {
+            "type": "string"
+        },
+        "isSecondary": {
+            "type": "string"
+        },
+        "pageSize": {
+            "type": "string"
+        },
+        "strConn": {
+            "type": "string"
+        },
+        "containerName": {
+            "type": "string"
+        },
+        "schAcct": {
+            "type": "string"
+        },
+        "schAPIKey": {
+            "type": "string"
+        },
+        "schIndex": {
+            "type": "string"
+        },
+        "apiAppURL": {
+            "type": "string"
+        },
+        "redirURL": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2015-04-01",
+            "name": "[parameters('hostingPlanName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "name": "[parameters('hostingPlanName')]"
+            }
+        },
+        {
+            "apiVersion": "2015-08-01",
+            "type": "Microsoft.Web/sites",
+            "name": "[parameters('appName')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "costcenter": "[parameters('costCenter')]"
+            },
+            "kind": "app",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+            },
+            "resources": [
+                {
+                    "apiVersion": "2015-08-01",
+                    "name": "web",
+                    "type": "config",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/sites/', parameters('appName'))]",
+                        "[concat('Microsoft.Web/sites/', parameters('appName'), '/extensions/MSDeploy')]"
+                    ],
+                    "properties": {
+                        "alwaysOn": true
+                    }
+                },
+                {
+                    "apiVersion": "2015-08-01",
+                    "name": "appSettings",
+                    "type": "config",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/sites/', parameters('appName'))]",
+                        "[concat('Microsoft.Web/sites/', parameters('appName'), '/extensions/MSDeploy')]"
+                    ],
+                    "properties": {
+                        "WEBSITE_NODE_DEFAULT_VERSION": "6.9.1",
+                        "FOTOS_TITLE": "[parameters('appTitle')]",
+                        "FOTOS_READONLY": "[parameters('readOnly')]",
+                        "FOTOS_ISSECONDARY": "[parameters('isSecondary')]",
+                        "FOTOS_PAGESIZE": "[parameters('pageSize')]",
+                        "FOTOS_STRCONN": "[parameters('strConn')]",
+                        "FOTOS_CONTAINER": "[parameters('containerName')]",
+                        "FOTOS_SCHACCT": "[parameters('schAcct')]",
+                        "FOTOS_SCHAPIKEY": "[parameters('schAPIKey')]",
+                        "FOTOS_SCHINDEX": "[parameters('schIndex')]",
+                        "FOTOS_APIAPPURL": "[parameters('apiAppURL')]",
+                        "REDIR_URL": "[parameters('redirURL')]"
+                    }
+                },
+                {
+                    "apiVersion": "2015-08-01",
+                    "type": "extensions",
+                    "name": "MSDeploy",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites/', parameters('appName'))]"
+                    ],
+                    "properties": {
+                        "packageUri": "[parameters('packageUri')]",
+                        "dbType": "None",
+                        "connectionString": "",
+                        "setParameters": {}
+                    }
+                }
+            ]
+        }
+    ]
+}

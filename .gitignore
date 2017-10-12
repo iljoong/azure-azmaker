@@ -1,0 +1,7 @@
+node_modules
+fotoapp/node_modules
+bower_components
+.vscode
+bak
+out
+_*

@@ -1,0 +1,396 @@
+<div class="row">
+    <div class="col-lg-12">
+        <h3 class="page-header">iFOTOS Demo</h3>
+    </div>
+    <!-- /.col-lg-12 -->
+</div>
+<div class="row">
+  <div class="panel panel-default">
+
+    <div class="panel-body">
+      <fieldset>
+        <ul class="nav nav-tabs">
+          <li role="presentation" id="nav1"><a href="#">Basics</a></li>
+          <li role="presentation" id="nav2"><a href="#">Apps</a></li>
+          <li role="presentation" id="nav3"><a href="#">Failover</a></li>
+        </ul>
+        <div id="form1" class="well">
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">$</span>
+            <input type="text" class="form-control" placeholder="resource group name" id="basic_rgname">
+          </div>
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">$</span>
+            <!-- <input type="text" class="form-control" placeholder="location" id="basic_location">-->
+            <select id="basic_location" class="form-control">
+              <option value="japanwest">Japan West/Japan East</option>
+              <option value="eastasia">East Asia/Southeast Asia</option>
+              <option value="eastus">East US/West US</option>
+            </select>
+          </div>
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">$</span>
+            <input type="text" class="form-control" placeholder="costcenter" id="basic_tags">
+          </div>
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">$</span>
+            <input type="text" class="form-control" placeholder="prefix name" id="basic_prefix">
+          </div>
+          <div>
+            <input type="checkbox" id="basic_dr"> enable DR</input>
+          </div>
+        </div>
+        <div id="form2" class="well">
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">%</span>
+            <input type="text" class="form-control" placeholder="vision api url" id="app_apiurl">
+          </div>
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">%</span>
+            <input type="text" class="form-control" placeholder="vision api key" id="app_apikey">
+          </div>
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">%</span>
+            <input type="text" class="form-control" placeholder="web package url" id="app_webpackurl">
+          </div>
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">%</span>
+            <input type="text" class="form-control" placeholder="fxapp package url" id="app_fxpackurl">
+          </div>
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">%</span>
+            <input type="text" class="form-control" placeholder="web template" id="app_webtemplateurl">
+          </div>
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">%</span>
+            <input type="text" class="form-control" placeholder="fx template" id="app_fxstdtemplateurl">
+          </div>
+          <div class="input-group input-group-sm">
+            <span class="input-group-addon">%</span>
+            <input type="text" class="form-control" placeholder="fx msdeploy template" id="app_fxdeptemplateurl">
+          </div>
+          <!-- <div class="input-group input-group-sm">
+            <span class="input-group-addon">%</span>
+            <input type="text" class="form-control" placeholder="fx dynamic template" id="app_fxdyntemplateurl">
+          </div> -->
+        </div>
+        <div id="form3" class="well">
+          <div>
+            <button class="btn btn-default" id="btnFailover">Failover</button><br>
+            <button class="btn btn-default" id="btnFailback">Failback</button>
+          </div>
+        </div>
+      </fieldset>
+      <div>
+        <button class="btn btn-default" id="btnload">Load</button>      
+        <button class="btn btn-default" id="btncreate">Create</button>
+        <button class="btn btn-default" id="btnreset">Reset</button>
+        <br><br>  
+        <div class="progress">
+          <div id="progbar" class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+          </div>
+
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body" id="provlog">
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<script id="main_page_js">
+  // navbar handling
+  $("#nav1").click(function () {
+    $("li").removeClass('active');
+    $(this).addClass('active');
+
+    $("div.well").hide();
+    $("#form1").show();
+  });
+
+  $("#nav2").click(function () {
+    $("li").removeClass('active');
+    $(this).addClass('active');
+
+    $("div.well").hide();
+    $("#form2").show();
+  });
+
+  $("#nav3").click(function () {
+    $("li").removeClass('active');
+    $(this).addClass('active');
+
+    $("div.well").hide();
+    $("#form3").show();
+  });
+
+
+  $(document).ready(function () {
+    $("#nav1").addClass('active');
+    $("div.well").hide();
+    $("#form1").show();
+
+  });
+
+  // execute
+  var fapp2 = require('./modules/fotoapp/app.js');
+  var _regions = { "japanwest": "japaneast", "eastasia": "southeastasia", "eastus": "westus" };
+  var _schloc = { "japanwest": "eastasia", "eastasia": "japanwest", "eastus": "westus" };
+
+  $("#btnreset").click(function () {
+    // reset
+    $("#btncreate").prop('disabled', false);
+    $('#progbar').css("width", "0%");
+    $("fieldset").prop('disabled', false);
+
+    //$('input').val('');
+  });
+
+  $("#btncreate").click(function () {
+    // TODO: validate
+
+    // disable settings
+    $("#btncreate").prop('disabled', true);
+    $("fieldset").prop('disabled', true);
+    var prefixName = $('#basic_prefix').val();
+
+    var optdr = $('#basic_dr').prop('checked');
+
+    var params = {
+      "title": "iFOTOS",
+      "redirURL": "redirurl",   // AAD app redirect
+      "isSecondary": 'false',
+
+      "tenant_id": $('#subs_tenant_id').val(),
+      "client_id": $('#subs_client_id').val(),
+      "client_secret": $('#subs_client_secret').val(),
+      "subscription": $('#subs_subscription').val(),
+
+      "resourceGroupName": $('#basic_rgname').val(),
+      "location": $('#basic_location').val(),
+      "schlocation": $('#basic_location').val(),
+      "tags": $('#basic_tags').val(),
+      "prefixName": $('#basic_prefix').val(),
+
+      "cogAPIUrl": $('#app_apiurl').val(),
+      "cogAPIKey": $('#app_apikey').val(),
+
+      // storage
+      "accountName": prefixName + "stor",
+      "containerName": 'images',
+      "queueName": 'azf-blobtrigger',
+      "tableName": 'fotoslog',
+      "corsURL": '*',
+
+      "storageConnString": null,
+
+      // search
+      "searchServiceName": prefixName + "sch",
+      "searchIndex": 'fotos-index',
+      "searchDataSource": 'fotos-blob-datasource',
+      "searchIndexer": 'fotos-json-indexer',
+
+      "searchAPIKey": null,
+
+      // webapp
+      "hostingPlanName": prefixName + 'wbpn',
+      "webSiteName": prefixName + 'web',
+      "webappPackageUri": $('#app_webpackurl').val(),
+      "webTemplateUri": $('#app_webtemplateurl').val(),
+      "webSiteReadOnly": 'false',
+
+      // functions
+      "functionName": prefixName + 'fx',
+      "funcPackageUri": $('#app_fxpackurl').val(),
+      //"funcTemplateUri": $('#app_fxdyntemplateurl').val(),
+      //"funcHostPlanName": prefixName + 'fxpn', // use own dynamic
+      "funcTemplateUri": $('#app_fxstdtemplateurl').val(),
+      "funcDeployTemplateUri": $('#app_fxdeptemplateurl').val(),
+      "funcHostPlanName": prefixName + 'wbpn',
+      "funcApiAppUrl": "TO_BE_ADDED", // get auth key programmatically
+
+      // tmname
+      "tmName": prefixName + "tm"
+    }
+
+    var params2 = {
+      "title": "iFOTOS-DR",
+      "redirURL": "redirurl",   // AAD app redirect
+      "isSecondary": 'true',
+
+      "tenant_id": $('#subs_tenant_id').val(),
+      "client_id": $('#subs_client_id').val(),
+      "client_secret": $('#subs_client_secret').val(),
+      "subscription": $('#subs_subscription').val(),
+
+      "resourceGroupName": $('#basic_rgname').val() + 'dr',
+      "location": _regions[$('#basic_location').val()],
+      "schlocation": _schloc[$('#basic_location').val()],
+      "tags": $('#basic_tags').val(),
+
+      "cogAPIUrl": $('#app_apiurl').val(),
+      "cogAPIKey": $('#app_apikey').val(),
+
+      // storage
+      "accountName": params.accountName + "dr",
+      "containerName": params.containerName,
+      "queueName": params.queueName,
+      "tableName": params.tableName,
+      "corsURL": '*',
+
+      "storageConnString": null,
+
+      // search
+      "searchServiceName": params.searchServiceName + "dr",
+      "searchIndex": params.searchIndex,
+      "searchDataSource": params.searchDataSource,
+      "searchIndexer": params.searchIndexer,
+
+      "searchAPIKey": null,
+
+      // webapp
+      "hostingPlanName": params.hostingPlanName + 'dr',
+      "webSiteName": params.webSiteName + 'dr',
+      "webappPackageUri": $('#app_webpackurl').val(),
+      "webTemplateUri": $('#app_webtemplateurl').val(),
+      "webSiteReadOnly": 'true',
+
+      // functions
+      "functionName": params.functionName + 'dr', // use webapp plan
+
+      "funcPackageUri": $('#app_fxpackurl').val(),
+      "funcTemplateUri": $('#app_fxstdtemplateurl').val(),
+      "funcDeployTemplateUri": $('#app_fxdeptemplateurl').val(),
+      "funcHostPlanName": params.funcHostPlanName + 'dr', // use webapp plan
+
+      "funcApiAppUrl": "TO_BE_ADDED", // get auth key programmatically
+
+      // tmname
+      "tmName": prefixName + "tm"
+    }
+
+    console.log(JSON.stringify(params, null, 4));
+
+    var count = 0;
+
+    if (!optdr) {
+      var tick = (100 / 10); // number of status message
+
+      console.log(JSON.stringify(params, null, 4));
+      fapp2.provisionService(params, function (results) {
+
+        $("#provlog").text(results);
+        count++;
+        var width = "" + count * tick + "%";
+        $('#progbar').css("width", width);
+      })
+    } else {
+      var tick = (100 / 22); // number of status message
+
+      console.log(JSON.stringify(params, null, 4));
+      console.log(JSON.stringify(params2, null, 4));
+
+      fapp2.provisionDRService(params, params2, function (results) {
+
+        $("#provlog").text(results);
+        count++;
+        var width = "" + count * tick + "%";
+        $('#progbar').css("width", width);
+      })
+    }
+
+  });
+
+  // load parameters
+  $("#btnload").click(function () {
+    ipc.send('open-file-dialog');
+  });
+
+  var fs = require('fs');
+  var ipc = require('electron').ipcRenderer;
+
+  ipc.on('selected-directory', function (event, path) {
+    //alert(`You selected: ${path[0]}`);
+
+    fs.readFile(path[0], 'utf8', (err, data) => {
+      if (err) throw err;
+      console.log(data);
+
+      var json = JSON.parse(data);
+      if (json.name && json.name == "fotoapp") {
+        // set input
+        $('#basic_dr').prop('checked', json.basic_dr);
+
+        $('#app_apiurl').val(json.app_apiurl);
+        $('#app_apikey').val(json.app_apikey);
+        $('#app_fxpackurl').val(json.app_fxpackurl);
+        $('#app_webpackurl').val(json.app_webpackurl);
+        $('#app_webtemplateurl').val(json.app_webtemplateurl);
+        $('#app_fxstdtemplateurl').val(json.app_fxstdtemplateurl);
+        $('#app_fxdeptemplateurl').val(json.app_fxdeptemplateurl);
+        //$('#app_fxdyntemplateurl').val(json.app_fxdyntemplateurl);
+      } else {
+        alert("invalid file");
+      }
+    });
+
+  });
+
+  var fswitch = require('./modules/fotoapp/fswitch.js');
+  function runFailOver(failover) {
+    var rgName = $('#basic_rgname').val();
+    var prefixName = $('#basic_prefix').val();
+
+    var params = {
+
+        tenant_id: $('#subs_tenant_id').val(),
+        client_id: $('#subs_client_id').val(),
+        client_secret: $('#subs_client_secret').val(),
+        subscription: $('#subs_subscription').val(),
+
+        resourceGroupName: rgName,
+
+        failOver: failover,
+        tmName: prefixName + "tm",
+
+        rgNameP: rgName,
+        locationP: $('#basic_location').val(),
+        websiteNameP: prefixName + "web",
+
+        rgNameS: rgName + "dr",
+        locationS: _regions[$('#basic_location').val()],
+        websiteNameS:  prefixName + "webdr",
+
+        searchServiceName: "",
+        searchAPIKey: "",
+
+        appSettings: {}
+    };
+
+    console.log(JSON.stringify(params, null, 4));
+
+    var count = 0;
+    var tick = (100 / 6);
+    fswitch.exeFailover(params, function(results) {
+        $("#provlog").text(results);
+        count++;
+        var width = "" + count * tick + "%";
+        $('#progbar').css("width", width);
+    });
+  }
+
+  $("#btnFailover").click(function () {
+    runFailOver(true);
+
+  });
+
+  $("#btnFailback").click(function () {
+    runFailOver(false);
+
+  });
+</script>

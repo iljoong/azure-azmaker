@@ -1,0 +1,64 @@
+<div class="row">
+    <div class="col-lg-12">
+        <h3 class="page-header">Azmaker Test Sample</h3>
+    </div>
+    <!-- /.col-lg-12 -->
+</div>
+
+<div class="row">
+    <div class="panel panel-default">
+        <div class="col-lg-12">
+            <div class="panel-heading">
+                Run provisioing
+            </div>
+            <div class="panel-body">
+                <form role="form">
+                    <fieldset>   
+                        <div>   
+                            <div class="slider" id="test_slider"></div>
+                        </div>
+                    </fieldset>
+                </form>
+                <button id="test_test">Start</button>
+                <button id="test_reset">Reset</button><br><br>
+                <div>
+                    <div class="progress">
+                        <div id="progbar" class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                        </div>
+
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-body" id="provlog">
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var app = require('./modules/test/app.js');
+    $('#test_test').click(function () {
+        $("#provlog").text("provisioning...");
+
+        app.run(function (prog, results) {
+            $("#provlog").text(results);
+            var width = "" + prog + "%";
+            $('#progbar').css("width", width);
+        });
+    });
+
+    $('#test_reset').click(function () {
+        $("#provlog").text("");
+        $('#progbar').css("width", "0%");
+
+    });
+
+    $(document).ready(function() {
+
+    });
+
+</script>

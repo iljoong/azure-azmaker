@@ -1,0 +1,15 @@
+{
+    "name": "fotoapp",
+    
+    "basic_dr": true,
+
+    "app_apiurl": "https://api.projectoxford.ai/vision/v1.0/analyze",
+    "app_apikey": "<add key>",
+    "app_fxpackurl": "https://iljoongstorage.blob.core.windows.net/package/fotosfx26.zip",
+    "app_webpackurl": "https://iljoongstorage.blob.core.windows.net/package/fotosweb28.zip",
+
+    "app_webtemplateurl": "https://iljoongstorage.blob.core.windows.net/package/azwebapp_deploy.json",
+    "app_fxdyntemplateurl": "https://iljoongstorage.blob.core.windows.net/package/azfuncdeploy_dynamic.json",
+    "app_fxstdtemplateurl": "https://iljoongstorage.blob.core.windows.net/package/azfunc_appsettings.json",
+    "app_fxdeptemplateurl": "https://iljoongstorage.blob.core.windows.net/package/azfunc_msdeploy.json"
+}

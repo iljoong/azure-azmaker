@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="../extra/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- MetisMenu CSS -->
+    <link href="../extra/metisMenu/metisMenu.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="../extra/sb-admin-2.css" rel="stylesheet">
+    <!-- Custom Fonts -->
+    <link href="../extra/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <title>Settings</title>
+</head>
+
+<body>
+    <div class="panel-body">
+        <strong>Subscription</strong>
+    </div>
+    <div id="form1" class="well">
+        <div class="input-group input-group-sm">
+            <span class="input-group-addon">@</span>
+            <input type="text" class="form-control" placeholder="description" id="subs_desc">
+        </div>
+        <div class="input-group input-group-sm">
+            <span class="input-group-addon">@</span>
+            <input type="text" class="form-control" placeholder="tenant_id" id="subs_tenant_id">
+        </div>
+        <div class="input-group input-group-sm">
+            <span class="input-group-addon">@</span>
+            <input type="text" class="form-control" placeholder="client_id" id="subs_client_id">
+        </div>
+        <div class="input-group input-group-sm">
+            <span class="input-group-addon">@</span>
+            <input type="text" class="form-control" placeholder="client_secret" id="subs_client_secret">
+        </div>
+        <div class="input-group input-group-sm">
+            <span class="input-group-addon">@</span>
+            <input type="text" class="form-control" placeholder="subscription" id="subs_subscription">
+        </div>
+    </div>
+    <div class="panel-body">
+        <button id="btnsave">Save</button> <button id="btncancel">Cancel</button>
+    </div>
+    <!-- -->
+    <script src="../extra/jquery/jquery.min.js"></script>
+    <script>
+        if (typeof module === 'object') { window.jQuery = window.$ = module.exports; };
+    </script>
+    <script src="../extra/bootstrap/js/bootstrap.min.js"></script>
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="../extra/metisMenu/metisMenu.min.js"></script>
+    <!-- Custom Theme JavaScript -->
+    <script src="../extra/sb-admin-2.js"></script>
+    <script>
+        var ipc = require('electron').ipcRenderer;
+
+        $(document).ready(function () {
+            ipc.on('app-settings-file', function (event, data) {
+                var json = JSON.parse(data);
+
+                if (json.name && json.name == "azmaker") {
+
+                    $('#subs_desc').val(json.subs_desc);
+                    $('#subs_tenant_id').val(json.subs_tenant_id);
+                    $('#subs_client_id').val(json.subs_client_id);
+                    $('#subs_client_secret').val(json.subs_client_secret);
+                    $('#subs_subscription').val(json.subs_subscription);
+                } else {
+                    alert('app settings file is invalid!')
+                }
+            });
+
+            ipc.send('app-settinges');
+        });
+
+
+        $('#btnsave').click(function () {
+            // save
+            var json = {
+                "name": "azmaker",
+                "subs_desc": $('#subs_desc').val(),
+                "subs_tenant_id": $('#subs_tenant_id').val(),
+                "subs_client_id": $('#subs_client_id').val(),
+                "subs_client_secret": $('#subs_client_secret').val(),
+                "subs_subscription": $('#subs_subscription').val()
+            }
+
+            alert('Please reload');
+            ipc.send('app-settinges-save', json);
+
+            window.close();
+        });
+
+        $('#btncancel').click(function () {
+            window.close();
+        });
+    </script>
+</body>

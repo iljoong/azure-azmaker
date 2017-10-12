@@ -1,0 +1,17 @@
+{
+  "name": "ifotoapp",
+  "version": "0.1.0",
+  "main": "testapp.js",
+  "dependencies": {
+    "async": "^2.1.5",
+    "azure-arm-compute": "^1.0.0-preview",
+    "azure-arm-resource": "^2.0.0-preview",
+    "azure-arm-storage": "^1.0.0-preview",
+    "azure-arm-website": "^1.0.0-preview",
+    "azure-storage": "^2.1.0",
+    "ms-rest-azure": "^2.1.1",
+    "open": "0.0.5",
+    "request": "^2.79.0",
+    "util": "^0.10.3"
+  }
+}
