@@ -14,7 +14,7 @@
     "azure-arm-trafficmanager": "^1.0.0-preview",
     "azure-arm-website": "^1.0.0-preview",
     "azure-storage": "^2.1.0",
-    "electron": "^1.6.1",
+    "electron": "^9.1.0",
     "ms-rest-azure": "^2.1.1",
     "request": "^2.79.0",
     "util": "^0.10.3"
